@@ -1,0 +1,7 @@
+#!/bin/rc
+# run rrss and convert html to text, retaining link urls
+rrss $* | sed '
+	s/^title:.*$/<p>&/g
+	s/^link:.*$/<br>&/g
+	s/^date:.*$/<br>&<br>/g
+	' | tcs -t html | htmlfmt -a -c utf-8 | uhtml
