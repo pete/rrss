@@ -1,5 +1,5 @@
 // RSS feed reader that outputs to text, werc/apps/barf or werc/apps/blagh format
-//
+
 package main
 
 import (
