@@ -1,18 +1,21 @@
-// RSS feed reader that outputs to text, werc/apps/barf or werc/apps/blagh format
-
+// RSS feed reader that outputs plain text, werc/apps/barf, or werc/apps/blagh format.
 package main
 
 import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/SlyMarbo/rss"
 	"io/ioutil"
 	"log"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/SlyMarbo/rss"	// BUG: New versions intermittently
+					// return empty Item.Link value.
+					// Locally using version dowloaded
+					// 2014.02.04. TODO: Vendor it.
 )
 
 var (
@@ -60,6 +63,7 @@ func makeold(link string, path string) (int, error) {
 	return f.WriteString(link + "\n")
 }
 
+// https://bitbucket.org/stanleylieber/barf
 func barf(url string) {
 	feed, err := rss.Fetch(url)
 	check(err)
@@ -116,6 +120,7 @@ func barf(url string) {
 	}
 }
 
+// http://werc.cat-v.org/apps/blagh
 func blagh(url string) {
 	feed, err := rss.Fetch(url)
 	check(err)

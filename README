@@ -14,14 +14,14 @@
           There are a number of options:
 
           -f   Place output in formatted directories for one
-               of two werc apps: barf or blagh. In the absense
+               of two werc apps: barf or blagh. In the absence
                of the -f flag, formatted output is placed on
                stdout.
 
-               A file links is created in the root and is populated
+               A file, links, is created in the root and is populated
                with the URL of each feed item acquired. On sub-
                sequent runs, URLs that appear in the links file are
-               not recreated as directories.
+               not recreated as new directories.
 
           -r   Optionally, create barf or blagh directories
                under root. Default is the current directory.

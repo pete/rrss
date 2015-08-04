@@ -1,5 +1,6 @@
 #!/bin/rc
-# run rrss and convert html to text, retaining link urls
+# Run rrss and convert HTML to plain text, retaining link URLs.
+# NOTE: Requires plan9port or 9base. Fix the path to rc.
 rrss $* | sed '
 	s/^title:.*$/<p>&/g
 	s/^link:.*$/<br>&/g
