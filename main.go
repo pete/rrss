@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/SlyMarbo/rss"	// BUG: New versions intermittently
-					// return empty Item.Link value.
-					// Locally using version dowloaded
-					// 2014.02.04. TODO: Vendor it.
+	// BUG: New versions of SlyMarbo/rss intermittently
+	// return an empty Item.Link value. Now using a version
+	// dowloaded on 2014.02.04. TODO: Vendor it?  Whatever?
+	"github.com/SlyMarbo/rss"
 )
 
 var (
