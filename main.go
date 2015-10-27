@@ -14,7 +14,7 @@ import (
 
 	// BUG: New versions of SlyMarbo/rss intermittently
 	// return an empty Item.Link value. Now using a version
-	// dowloaded on 2014.02.04. TODO: Vendor it?  Whatever?
+	// dowloaded on 2014.02.04. TODO: Vendor it? Whatever?
 	"github.com/SlyMarbo/rss"
 )
 
@@ -111,9 +111,12 @@ func barf(url string) {
 		check(err)
 		if *tag != "" {
 			err = os.MkdirAll(d+"/tags", 0775)
-			f, err := os.Create(d + "/tags/" + *tag)
-			f.Close()
 			check(err)
+			for _, j := range strings.Split(*tag, " ") {
+				f, err := os.Create(d + "/tags/" + j)
+				f.Close()
+				check(err)
+			}
 		}
 		_, err = makeold(i.Link, links)
 		check(err)
