@@ -41,7 +41,7 @@ func check(err error) {
 func isold(link string, path string) bool {
 	file, err := os.Open(path)
 	if err != nil {
-		return false
+		return true
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
