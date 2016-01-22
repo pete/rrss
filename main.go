@@ -14,7 +14,8 @@ import (
 
 	// BUG: New versions of SlyMarbo/rss intermittently
 	// return an empty Item.Link value. Now using a version
-	// dowloaded on 2014.02.04. TODO: Vendor it? Whatever?
+	// dowloaded on 2014.02.04. Bug report yielded no response.
+	// TODO: Vendor last known working version?
 	"github.com/SlyMarbo/rss"
 )
 

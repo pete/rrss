@@ -21,7 +21,7 @@
                A file, links, is created in the root and is populated
                with the URL of each feed item acquired. On sub-
                sequent runs, URLs that appear in the links file are
-               not recreated as new directories.
+               not duplicated as new directories.
 
           -r   Optionally, create barf or blagh directories
                under root. Default is the current directory.
@@ -38,4 +38,4 @@
      SEE ALSO
           http://werc.cat-v.org
           http://werc.cat-v.org/apps/blagh
-          https://bitbucket.org/stanleylieber/barf
+          https://code.9front.org/hg/barf
