@@ -40,7 +40,7 @@ func check(err error) {
 }
 
 func isold(link string, path string) bool {
-	file, err := os.Open(path)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0775)
 	if err != nil {
 		return true
 	}
@@ -64,7 +64,7 @@ func makeold(link string, path string) (int, error) {
 	return f.WriteString(link + "\n")
 }
 
-// https://bitbucket.org/stanleylieber/barf
+// https://code.9front.org/hg/barf
 func barf(url string) {
 	feed, err := rss.Fetch(url)
 	check(err)
@@ -108,7 +108,7 @@ func barf(url string) {
 		check(err)
 		err = ioutil.WriteFile(d+"/date", []byte(i.Date.String()+"\n"), 0775)
 		check(err)
-		err = ioutil.WriteFile(d+"/body", []byte(i.Content+"\n"), 0775)
+		err = ioutil.WriteFile(d+"/body", []byte(conorsum(i)+"\n"), 0775)
 		check(err)
 		if *tag != "" {
 			err = os.MkdirAll(d+"/tags", 0775)
@@ -146,7 +146,7 @@ func blagh(url string) {
 		check(err)
 		err = ioutil.WriteFile(
 			d+"/index.md",
-			[]byte(i.Title+"\n========\n\n"+i.Content+"\n"),
+			[]byte(i.Title+"\n===\n\n"+conorsum(i)+"\n"),
 			0775,
 		)
 		check(err)
@@ -160,8 +160,18 @@ func stdout(url string) {
 	check(err)
 	for _, i := range feed.Items {
 		fmt.Printf("title: %s\nlink: %s\ndate: %s\n%s\n\n",
-			i.Title, i.Link, i.Date, i.Content)
+			i.Title, i.Link, i.Date, conorsum(i))
 	}
+}
+
+func conorsum(i *rss.Item) string {
+	if len(i.Content) > 0 {
+		return i.Content
+	}
+	if len(i.Summary) > 0 {
+		return i.Summary
+	}
+	return ""
 }
 
 func main() {
