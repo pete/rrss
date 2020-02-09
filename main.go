@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"log"
 	"os"
@@ -165,13 +166,16 @@ func stdout(url string) {
 }
 
 func conorsum(i *rss.Item) string {
-	if len(i.Content) > 0 {
-		return i.Content
+	var s string
+	switch {
+	case len(i.Content) > 0:
+		s = i.Content
+	case len(i.Summary) > 0:
+		s = i.Summary
+	default:
+		return ""
 	}
-	if len(i.Summary) > 0 {
-		return i.Summary
-	}
-	return ""
+	return html.UnescapeString(s)
 }
 
 func main() {
