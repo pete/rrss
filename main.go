@@ -8,6 +8,7 @@ import (
 	"html"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"sort"
 	"strconv"
@@ -40,6 +41,16 @@ func check(err error) {
 	}
 }
 
+func fetchfeed(url string) (resp *http.Response, err error) {
+	client := http.DefaultClient
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (compatible; hjdicks)")
+	return client.Do(req)
+}
+
 func isold(link string, path string) bool {
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0775)
 	if err != nil {
@@ -67,7 +78,10 @@ func makeold(link string, path string) (int, error) {
 
 // https://code.9front.org/hg/barf
 func barf(url string) {
-	feed, err := rss.Fetch(url)
+	feed, err := rss.FetchByFunc(fetchfeed, url)
+	if *debug {
+		log.Printf("Tried fetching feed '%s' => err: %v\n", url, err);
+	}
 	check(err)
 	for _, i := range feed.Items {
 		d := "src"
@@ -127,7 +141,7 @@ func barf(url string) {
 
 // http://werc.cat-v.org/apps/blagh
 func blagh(url string) {
-	feed, err := rss.Fetch(url)
+	feed, err := rss.FetchByFunc(fetchfeed, url)
 	check(err)
 	for _, i := range feed.Items {
 		d := fmt.Sprintf("%d/%02d/%02d", i.Date.Year(), i.Date.Month(), i.Date.Day())
@@ -157,7 +171,10 @@ func blagh(url string) {
 }
 
 func stdout(url string) {
-	feed, err := rss.Fetch(url)
+	feed, err := rss.FetchByFunc(fetchfeed, url)
+	if *debug {
+		log.Printf("Tried fetching feed '%s' => err: %v\n", url, err);
+	}
 	check(err)
 	for _, i := range feed.Items {
 		fmt.Printf("title: %s\nlink: %s\ndate: %s\n%s\n\n",
