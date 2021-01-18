@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	// BUG: New versions of SlyMarbo/rss intermittently
 	// return an empty Item.Link value. Now using a version
@@ -51,29 +52,31 @@ func fetchfeed(url string) (resp *http.Response, err error) {
 	return client.Do(req)
 }
 
-func isold(link string, path string) bool {
+func isold(date time.Time, link string, path string) bool {
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0775)
 	if err != nil {
 		return true
 	}
 	defer file.Close()
+	s := fmt.Sprintf("%d_%s", date.Unix(), link)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if strings.Contains(link, scanner.Text()) {
+		if strings.Contains(s, scanner.Text()) {
 			return true
 		}
 	}
 	return false
 }
 
-func makeold(link string, path string) (int, error) {
+func makeold(date time.Time, link string, path string) (int, error) {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0775)
 	defer f.Close()
 	check(err)
 	if link == "" {
 		link = "empty"
 	}
-	return f.WriteString(link + "\n")
+	s := fmt.Sprintf("%d_%s", date.Unix(), link)
+	return f.WriteString(s + "\n")
 }
 
 // https://code.9front.org/hg/barf
@@ -90,7 +93,7 @@ func barf(url string) {
 			d = *root + "/" + d
 			links = *root + "/" + links
 		}
-		if isold(i.Link, links) {
+		if isold(i.Date, i.Link, links) {
 			continue
 		}
 		err = os.MkdirAll(d, 0775)
@@ -134,7 +137,7 @@ func barf(url string) {
 				check(err)
 			}
 		}
-		_, err = makeold(i.Link, links)
+		_, err = makeold(i.Date, i.Link, links)
 		check(err)
 	}
 }
@@ -150,7 +153,7 @@ func blagh(url string) {
 			d = *root + "/" + d
 			links = *root + "/" + links
 		}
-		if isold(i.Link, links) {
+		if isold(i.Date, i.Link, links) {
 			continue
 		}
 		f, _ := os.Open(d) // directory will usually not exist yet
@@ -165,7 +168,7 @@ func blagh(url string) {
 			0775,
 		)
 		check(err)
-		_, err = makeold(i.Link, links)
+		_, err = makeold(i.Date, i.Link, links)
 		check(err)
 	}
 }
