@@ -34,7 +34,7 @@
           outputting plain text but preserving link URLs.
 
      SOURCE
-          http://plan9.stanleylieber.com/src/rrss.tgz
+          https://code.9front.org/hg/rrss
      SEE ALSO
           http://werc.cat-v.org
           http://werc.cat-v.org/apps/blagh
