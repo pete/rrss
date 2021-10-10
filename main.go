@@ -3,8 +3,10 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/SlyMarbo/rss"
 	"html"
 	"io/ioutil"
 	"log"
@@ -14,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"github.com/SlyMarbo/rss"
 )
 
 var (
@@ -38,7 +39,19 @@ func check(err error) {
 }
 
 func fetchfeed(url string) (resp *http.Response, err error) {
-	client := http.DefaultClient
+	defaultTransport := http.DefaultTransport.(*http.Transport)
+
+	// Create new Transport that ignores self-signed SSL
+	customTransport := &http.Transport{
+		Proxy:                 defaultTransport.Proxy,
+		DialContext:           defaultTransport.DialContext,
+		MaxIdleConns:          defaultTransport.MaxIdleConns,
+		IdleConnTimeout:       defaultTransport.IdleConnTimeout,
+		ExpectContinueTimeout: defaultTransport.ExpectContinueTimeout,
+		TLSHandshakeTimeout:   defaultTransport.TLSHandshakeTimeout,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: customTransport}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -78,7 +91,7 @@ func makeold(date time.Time, link string, path string) (int, error) {
 func barf(url string) {
 	feed, err := rss.FetchByFunc(fetchfeed, url)
 	if *debug {
-		log.Printf("Tried fetching feed '%s' => err: %v\n", url, err);
+		log.Printf("Tried fetching feed '%s' => err: %v\n", url, err)
 	}
 	check(err)
 	for _, i := range feed.Items {
@@ -171,7 +184,7 @@ func blagh(url string) {
 func stdout(url string) {
 	feed, err := rss.FetchByFunc(fetchfeed, url)
 	if *debug {
-		log.Printf("Tried fetching feed '%s' => err: %v\n", url, err);
+		log.Printf("Tried fetching feed '%s' => err: %v\n", url, err)
 	}
 	check(err)
 	for _, i := range feed.Items {
