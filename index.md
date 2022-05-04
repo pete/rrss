@@ -35,6 +35,8 @@
 
      SOURCE
           https://code.9front.org/hg/rrss
+     FORKS
+          https://only9fans.com/phil9/rrss/HEAD/info.html
      SEE ALSO
           http://werc.cat-v.org
           http://werc.cat-v.org/apps/blagh
