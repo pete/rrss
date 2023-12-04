@@ -2,12 +2,12 @@
 package main
 
 import (
-	"bufio"
 	"crypto/tls"
 	"flag"
 	"fmt"
 	"github.com/SlyMarbo/rss"
 	"html"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -38,26 +38,34 @@ func check(err error) {
 	}
 }
 
-func fetchfeed(url string) (resp *http.Response, err error) {
-	defaultTransport := http.DefaultTransport.(*http.Transport)
+var client *http.Client
 
-	// Create new Transport that ignores self-signed SSL
-	customTransport := &http.Transport{
-		Proxy:                 defaultTransport.Proxy,
-		DialContext:           defaultTransport.DialContext,
-		MaxIdleConns:          defaultTransport.MaxIdleConns,
-		IdleConnTimeout:       defaultTransport.IdleConnTimeout,
-		ExpectContinueTimeout: defaultTransport.ExpectContinueTimeout,
-		TLSHandshakeTimeout:   defaultTransport.TLSHandshakeTimeout,
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+func c() *http.Client {
+	if client == nil {
+		defaultTransport := http.DefaultTransport.(*http.Transport)
+	
+		// Create new Transport that ignores self-signed SSL
+		customTransport := &http.Transport{
+			Proxy:                 defaultTransport.Proxy,
+			DialContext:           defaultTransport.DialContext,
+			MaxIdleConns:          defaultTransport.MaxIdleConns,
+			IdleConnTimeout:       defaultTransport.IdleConnTimeout,
+			ExpectContinueTimeout: defaultTransport.ExpectContinueTimeout,
+			TLSHandshakeTimeout:   defaultTransport.TLSHandshakeTimeout,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+		}
+		client = &http.Client{Transport: customTransport}
 	}
-	client := &http.Client{Transport: customTransport}
+	return client
+}
+
+func fetchfeed(url string) (resp *http.Response, err error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (compatible; hjdicks)")
-	return client.Do(req)
+	return c().Do(req)
 }
 
 func isold(date time.Time, link string, path string) bool {
@@ -66,14 +74,18 @@ func isold(date time.Time, link string, path string) bool {
 		return true
 	}
 	defer file.Close()
-	s := fmt.Sprintf("%d_%s", date.Unix(), link)
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if strings.Contains(s, scanner.Text()) {
-			return true
+	s := fmt.Sprintf("%d_%s\n", date.Unix(), link)
+	f, err := io.ReadAll(file)
+	if err != nil {
+		return true
+	}
+	r := strings.Contains(string(f), s)
+	if *debug {
+		if !r {
+			log.Printf("» NEW: %q\n", s)
 		}
 	}
-	return false
+	return r
 }
 
 func makeold(date time.Time, link string, path string) (int, error) {
@@ -101,7 +113,7 @@ func barf(url string) {
 			d = *root + "/" + d
 			links = *root + "/" + links
 		}
-		if isold(i.Date, i.Link, links) {
+		if isold(i.Date, i.ID, links) {
 			continue
 		}
 		err = os.MkdirAll(d, 0775)
@@ -123,8 +135,8 @@ func barf(url string) {
 		}
 		d = fmt.Sprintf("%s/%d", d, n)
 		if *debug == true {
-			fmt.Printf("%s len(di): %d n: %d d: %s\n",
-				i.Link, len(di), n, d)
+			fmt.Printf("%s[%s] len(di): %d n: %d d: %s\n",
+				i.Link, i.ID, len(di), n, d)
 		}
 		err = os.MkdirAll(d, 0775)
 		check(err)
@@ -145,7 +157,7 @@ func barf(url string) {
 				check(err)
 			}
 		}
-		_, err = makeold(i.Date, i.Link, links)
+		_, err = makeold(i.Date, i.ID, links)
 		check(err)
 	}
 }
@@ -161,7 +173,7 @@ func blagh(url string) {
 			d = *root + "/" + d
 			links = *root + "/" + links
 		}
-		if isold(i.Date, i.Link, links) {
+		if isold(i.Date, i.ID, links) {
 			continue
 		}
 		f, _ := os.Open(d) // directory will usually not exist yet
@@ -176,7 +188,7 @@ func blagh(url string) {
 			0775,
 		)
 		check(err)
-		_, err = makeold(i.Date, i.Link, links)
+		_, err = makeold(i.Date, i.ID, links)
 		check(err)
 	}
 }
